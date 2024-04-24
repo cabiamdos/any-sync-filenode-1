@@ -20,22 +20,23 @@ func (ri *redisIndex) CheckLimits(ctx context.Context, key Key) (err error) {
 		return
 	}
 	defer release()
-
+        // INFO: I have remove this check, it basically do check if size of the new file is greater than the overall limit
 	// isolated space
 	if entry.space.Limit != 0 {
-		if entry.space.Size_ >= entry.space.Limit {
-			return ErrLimitExceed
-		}
+		//if entry.space.Size_ >= entry.space.Limit {
+		//	return ErrLimitExceed
+		//}
 		return
 	}
-
+        // INFO: I have commented this one
 	// group limit
-	if entry.group.Size_ >= entry.group.Limit {
-		return ErrLimitExceed
-	}
+	//if entry.group.Size_ >= entry.group.Limit {
+	//	return ErrLimitExceed
+	//}
 	return
 }
 
+// INFO: SetGroupLimit and set SsetSpaceLimit I believe this are the functions called in the filenode, not sure
 func (ri *redisIndex) SetGroupLimit(ctx context.Context, groupId string, limit uint64) (err error) {
 	op := &spaceLimitOp{
 		redisIndex: ri,
@@ -74,6 +75,8 @@ func (op *spaceLimitOp) SetGroupLimit(ctx context.Context, groupId string, limit
 		// same limit - do nothing
 		return
 	}
+        // INFO: we are going to exit the function we don't want to touch the limits
+        return
 
 	isolatedLimit := op.groupEntry.AccountLimit - op.groupEntry.Limit
 	if op.groupEntry.AccountLimit > limit {
@@ -81,15 +84,17 @@ func (op *spaceLimitOp) SetGroupLimit(ctx context.Context, groupId string, limit
 		// check the isolated limit, if the new limit is covering the isolated limit - do nothing
 		if isolatedLimit > limit {
 			// decrease the limit for isolated spaces in the same proportion as the account limit
-			isolatedLimit, err = op.decreaseIsolatedLimit(ctx, float64(limit)/float64(op.groupEntry.AccountLimit))
+			// don't decreaese anything please
+                        //isolatedLimit, err = op.decreaseIsolatedLimit(ctx, float64(limit)/float64(op.groupEntry.AccountLimit))
 			if err != nil {
 				return err
 			}
 		}
 	}
-
-	op.groupEntry.Limit = limit - isolatedLimit
-	op.groupEntry.AccountLimit = limit
+        // INFO: I removed this operation, but I am not going to reset the limit and going to return at the beginning
+	//op.groupEntry.Limit = limit - isolatedLimit
+	op.groupEntry.Limit = limit
+        op.groupEntry.AccountLimit = limit
 	return op.saveAll(ctx)
 }
 
@@ -141,12 +146,17 @@ func (op *spaceLimitOp) SetSpaceLimit(ctx context.Context, key Key, limit uint64
 		// same limit - do nothing
 		return
 	}
+
+        // INFO: don't touch space limit please
+        return
 	prevLimit := entry.space.Limit
 	entry.space.Limit = limit
 
 	if limit != 0 {
-		diff := int64(limit) - int64(prevLimit)
-		newGLimit := int64(op.groupEntry.Limit) - diff
+                // INFO: this was my first change, but now I thought in exiting the function
+		//diff := int64(limit) - int64(prevLimit)
+		diff := int64(limit)
+                newGLimit := int64(op.groupEntry.Limit) - diff
 
 		// check the group limit
 		if newGLimit < int64(op.groupEntry.Size_) {

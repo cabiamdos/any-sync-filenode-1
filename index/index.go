@@ -238,11 +238,12 @@ func (ri *redisIndex) GroupInfo(ctx context.Context, groupId string) (info Group
 	if err != nil {
 		return
 	}
+        // INFO: Initialize GroupInfo limits, overriding them
 	return GroupInfo{
 		BytesUsage:   sEntry.Size_,
 		CidsCount:    sEntry.CidCount,
-		AccountLimit: sEntry.AccountLimit,
-		Limit:        sEntry.Limit,
+		AccountLimit: 1000000000000,
+		Limit:        900000000000,
 		SpaceIds:     sEntry.SpaceIds,
 	}, nil
 }
@@ -257,10 +258,11 @@ func (ri *redisIndex) SpaceInfo(ctx context.Context, key Key) (info SpaceInfo, e
 	if err != nil {
 		return
 	}
+        // INFO: initialize SpaceInfo overwriting the limits
 	return SpaceInfo{
 		BytesUsage: sEntry.Size_,
 		CidsCount:  sEntry.CidCount,
-		Limit:      sEntry.Limit,
+		Limit:      1000000000000,
 		FileCount:  sEntry.FileCount,
 	}, nil
 }

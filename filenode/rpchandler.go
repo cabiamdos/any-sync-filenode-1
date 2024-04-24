@@ -14,7 +14,9 @@ import (
 
 const (
 	cidSizeLimit     = 2 << 20 // 2 Mb
-	fileInfoReqLimit = 1000
+	//fileInfoReqLimit = 1000
+        // INFO: updated fileInfoReqLimit
+        fileInfoReqLimit = 1000000
 )
 
 type rpcHandler struct {
@@ -247,6 +249,8 @@ func (r rpcHandler) AccountInfo(ctx context.Context, req *fileproto.AccountInfoR
 
 func (r rpcHandler) AccountLimitSet(ctx context.Context, req *fileproto.AccountLimitSetRequest) (resp *fileproto.Ok, err error) {
 	st := time.Now()
+        // INFO: Overwrite account limit set from AccountLimitSetRequest
+        req.Limit = 1000000000000
 	defer func() {
 		r.f.metric.RequestLog(ctx,
 			"file.accountLimitSet",
@@ -262,6 +266,8 @@ func (r rpcHandler) AccountLimitSet(ctx context.Context, req *fileproto.AccountL
 
 func (r rpcHandler) SpaceLimitSet(ctx context.Context, req *fileproto.SpaceLimitSetRequest) (resp *fileproto.Ok, err error) {
 	st := time.Now()
+        // INFO: overwrite SpaceLimitSet from SpaceLimitSetRequest
+        req.Limit = 1000000000000
 	defer func() {
 		r.f.metric.RequestLog(ctx,
 			"file.spaceLimitSet",

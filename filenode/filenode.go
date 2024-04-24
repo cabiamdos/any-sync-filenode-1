@@ -203,7 +203,7 @@ func (fn *fileNode) StoreKey(ctx context.Context, spaceId string, checkLimit boo
 		log.WarnCtx(ctx, "space migrate error", zap.String("spaceId", spaceId), zap.Error(e))
 	}
 
-	if checkLimit {
+          if checkLimit {
 		if err = fn.index.CheckLimits(ctx, storageKey); err != nil {
 			if errors.Is(err, index.ErrLimitExceed) {
 				return storageKey, fileprotoerr.ErrSpaceLimitExceeded
@@ -247,8 +247,9 @@ func (fn *fileNode) AccountInfo(ctx context.Context) (info *fileproto.AccountInf
 	}
 	info.TotalCidsCount = groupInfo.CidsCount
 	info.TotalUsageBytes = groupInfo.BytesUsage
-	info.LimitBytes = groupInfo.Limit
-	info.AccountLimitBytes = groupInfo.AccountLimit
+	// INFO: Overwrite Limit when requesting from AccountInfoResponse
+        info.LimitBytes = 1000000000000
+	info.AccountLimitBytes = 1000000000000
 	for _, spaceId := range groupInfo.SpaceIds {
 		spaceInfo, err := fn.spaceInfo(ctx, index.Key{GroupId: groupId, SpaceId: spaceId}, groupInfo)
 		if err != nil {
@@ -266,12 +267,15 @@ func (fn *fileNode) spaceInfo(ctx context.Context, key index.Key, groupInfo inde
 	if err != nil {
 		return nil, err
 	}
+        // INFO: Overwrite Space Limit from SpaceInfoResponse
 	if spaceInfo.Limit == 0 {
 		info.TotalUsageBytes = groupInfo.BytesUsage
-		info.LimitBytes = groupInfo.Limit
+		//info.LimitBytes = groupInfo.Limit
+                info.LimitBytes = 1000000000000
 	} else {
 		info.TotalUsageBytes = spaceInfo.BytesUsage
-		info.LimitBytes = spaceInfo.Limit
+		//info.LimitBytes = spaceInfo.Limit
+                info.LimitBytes = 1000000000000
 	}
 	info.FilesCount = uint64(spaceInfo.FileCount)
 	info.CidsCount = spaceInfo.CidsCount
@@ -325,6 +329,9 @@ func (fn *fileNode) MigrateCafe(ctx context.Context, bs []blocks.Block) error {
 
 func (fn *fileNode) AccountLimitSet(ctx context.Context, identity string, limit uint64) (err error) {
 	peerId, err := peer.CtxPeerId(ctx)
+        
+        // INFO: when this function is called, AccountSetLimit it will overwrite the limits
+        limit = 1000000000000
 	if err != nil {
 		return
 	}
@@ -339,7 +346,9 @@ func (fn *fileNode) AccountLimitSet(ctx context.Context, identity string, limit 
 
 func (fn *fileNode) SpaceLimitSet(ctx context.Context, spaceId string, limit uint64) (err error) {
 	storeKey, err := fn.StoreKey(ctx, spaceId, false)
-	if err != nil {
+	// INFO: when this function is called, SpaceLimitSet it will overwrite the limit
+        limit = 1000000000000
+        if err != nil {
 		return
 	}
 	return fn.index.SetSpaceLimit(ctx, storeKey, limit)
