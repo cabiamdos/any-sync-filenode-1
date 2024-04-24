@@ -1,5 +1,20 @@
 # Any-Sync File Node
-Implementation of file node from [`any-sync`](https://github.com/anyproto/any-sync) protocol.
+> Implementation of file node from [`any-sync`](https://github.com/anyproto/any-sync) protocol.
+
+# PURPOSE
+This is forked from the official repository
+<br>
+This repository modifies the files index.go, limit.go, rcphandler.go, and filenode.go to overwrite 1GB limit
+<br>
+In my case I needed to inject in the file store\s3store\s3store.go the access key and the secret key, where it says `conf.Credentials.AccessKey`. Yo get those credentials in the minio web interface
+
+# INSTRUCTIONS
+Building is the same as before, but after building you should see much more available capacity
+![](images/2024-04-24-03-33-29.png)
+
+# DISCLAIRMER
+* This is the equivalent version of v0.6.4 branch of https://github.com/anyproto/any-sync-filenode
+* Works with anytype version 0.39
 
 ## Building the source
 To ensure compatibility, please use Go version `1.22`.

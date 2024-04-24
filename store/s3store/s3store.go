@@ -46,6 +46,13 @@ type s3store struct {
 
 func (s *s3store) Init(a *app.App) (err error) {
 	conf := a.MustComponent("config").(configSource).GetS3Store()
+
+	// INFO: define my variables
+	conf.Bucket = "any-sync-files"
+	conf.IndexBucket = "index-bucket"
+	conf.Endpoint = "http://127.0.0.1:9000"
+	conf.Credentials.AccessKey = "<your_acces_key>"
+	conf.Credentials.SecretKey = "<your_secret_key>"
 	if conf.Profile == "" {
 		conf.Profile = "default"
 	}
